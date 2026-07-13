@@ -18,6 +18,15 @@ CREATE TABLE medicines (
     stock BOOLEAN NOT NULL DEFAULT TRUE,
     image_url VARCHAR(255)
 );
+
+CREATE TABLE address(
+    addressid INT AUTO_INCREMENT PRIMARY KEY,
+    usr_id INT NOT NULL, 
+    address VARCHAR(255) NOT NULL DEFAULT "No address saved yet.",
+    Foreign Key (usr_id) REFERENCES customers(usr_id)
+);
+
+ALTER TABLE customers DROP COLUMN address;
 ALTER TABLE medicines
 ADD COLUMN sales INT NOT NULL DEFAULT 0;
 CREATE TABLE orders(
@@ -53,9 +62,10 @@ CREATE TABLE cart (
     UNIQUE (usr_id, med_id)
 );
 SELECT * FROM customers;
-
+SELECT * FROM address;
 SELECT * FROM medicines;
 
+SELECT * FROM cart;
 
 
 INSERT INTO customers(username,password,phone)
@@ -68,12 +78,14 @@ SELECT * FROM cart WHERE usr_id=3;
 INSERT INTO medicines(medicine_name,price,stock,image_url)
 VALUES("Dolo650",32,True,"C:\Users\Ramaprasad\Downloads\Untitled Folder\dolo650.avif");
 
-
+UPDATE customers SET address="No address saved yet.";
 
 
 UPDATE medicines SET image_url="https://res.cloudinary.com/ubt9l5i7/image/upload/v1783698900/comingsoon_dqtsr7.png"
 WHERE med_id>100;
 
+ALTER TABLE customers
+ADD COLUMN address VARCHAR(255) NOT NULL DEFAULT '';
 
 
 SELECT
@@ -87,3 +99,28 @@ FROM cart c
 JOIN medicines m
     ON c.med_id = m.med_id
 WHERE c.usr_id = 3;
+
+
+SELECT c.usr_id,c.username,a.address 
+FROM customers c
+JOIN address a
+ON c.usr_id=3
+
+INSERT INTO address(usr_id,address)
+VALUES(4,"Devi ganesh main road kaup");
+
+SELECT * FROM address
+
+
+
+DELIMITER //
+
+CREATE TRIGGER after_customer_insert
+AFTER INSERT ON customers
+FOR EACH ROW
+BEGIN
+    INSERT INTO address (usr_id)
+    VALUES (NEW.usr_id);
+END //
+
+DELIMITER ;

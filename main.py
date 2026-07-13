@@ -1,20 +1,20 @@
 from fastapi import FastAPI
 from config.db import Base, engine
 # Import routers and Search medicine 
-from routers import auth,search_medicine,cart
+from routers import auth,search_medicine,cart,order
 app = FastAPI(
     title="Maruthi Medical API",
     version="1.0.0"
 )
 
-# Create database tables (if they don't already exist)
+# Create database tables(if they don't already exist)
 Base.metadata.create_all(bind=engine)
 
 # Register routers
 app.include_router(auth.router)
 app.include_router(search_medicine.router)
 app.include_router(cart.router)
-
+app.include_router(order.router)
 # Test endpoint
 @app.get("/")
 def root():
