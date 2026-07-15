@@ -7,7 +7,7 @@ app = FastAPI(
     version="1.0.0"
 )
 
-# Create database tables(if they don't already exist)
+# Create database tables (if they don't already exist)
 Base.metadata.create_all(bind=engine)
 
 # Register routers
