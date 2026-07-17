@@ -1,7 +1,7 @@
 from fastapi import APIRouter, Depends
 from sqlalchemy.orm import Session
 from config.db import get_db
-from config.security import (hash_password,verify_password,create_access_token)
+from config.security import (hash_password,verify_password,create_access_token,create_refresh_token)
 from models.customer import Customer
 from schemas.auth import (RegisterRequest,LoginRequest)
 from fastapi import HTTPException
@@ -27,13 +27,19 @@ def register(user: RegisterRequest,db:Session=Depends(get_db)):
     db.add(new_user)
     db.commit()
     db.refresh(new_user)
-    token = create_access_token({
+    access_token = create_access_token({
         "sub": new_user.username,
         "id": new_user.usr_id
     })
+    refresh_token=create_refresh_token({
+        "sub":new_user.username,
+        "id":new_user.usr_id
+    })
+    
     return {
         "message": "Registration Successful",
-        "access_token": token,
+        "access_token": access_token,
+        "refresh_token":refresh_token,
         "token_type": "bearer"
     }
 
