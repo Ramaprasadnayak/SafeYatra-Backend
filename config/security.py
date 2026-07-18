@@ -57,17 +57,21 @@ def create_refresh_token(data: dict):
     return encoded_jwt
 
 # everytime user makes a request it verify the jwt token 
-def verify_token(token: str):
+def verify_token(token: str, expected_type: str):
     try:
         payload = jwt.decode(
             token,
             SECRET_KEY,
             algorithms=[ALGORITHM]
         )
+        if payload.get("type") != expected_type:
+            raise HTTPException(
+                status_code=401,
+                detail=f"{expected_type.capitalize()} token required"
+            )
         return payload
-
     except JWTError:
         raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
+            status_code=401,
             detail="Invalid or expired token"
         )
