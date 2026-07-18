@@ -5,8 +5,9 @@ from config.security import (hash_password,verify_password,create_access_token,c
 from models.customer import Customer
 from schemas.auth import (RegisterRequest,LoginRequest)
 from fastapi import HTTPException
+from fastapi.security import OAuth2PasswordBearer
 router = APIRouter(prefix="/auth",tags=["Authentication"])
-
+oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/auth/login")
  
 @router.post("/register")
 def register(user: RegisterRequest,db:Session=Depends(get_db)):
@@ -51,13 +52,18 @@ def login(user:LoginRequest,db:Session=Depends(get_db)):
         raise HTTPException(status_code=404,detail="User not found")
     given_password=verify_password(user.password,user_exists.password)
     if not given_password:
-        raise HTTPException(status_code=404,detail="Phone number already exists")
-    token=create_access_token({
+        raise HTTPException(status_code=401,detail="Invalid username or password")
+    access_token=create_access_token({
         "sub":user_exists.username,
         "id":user_exists.usr_id
-        })
+    })
+    refresh_token=create_refresh_token({
+        "sub":user_exists.username,
+        "id":user_exists.usr_id
+    })
     return {
         "message": "Login Successful",
-        "access_token": token,
+        "access_token": access_token,
+        "refresh_token":refresh_token,
         "token_type": "bearer"
     }

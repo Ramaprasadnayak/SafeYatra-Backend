@@ -7,6 +7,7 @@ from schemas.cart_schemas import CartRequest,CartQuantityRequest
 
 router = APIRouter(prefix="/cart", tags=["cartQuery"])
 
+# return all items of requested uid
 @router.get("/userid/{usrid}")
 def cartFunction(usrid: int, db: Session = Depends(get_db)):
     try:
@@ -48,7 +49,7 @@ def cartFunction(usrid: int, db: Session = Depends(get_db)):
             detail=str(e)
         )
 
-
+# add to cart for requested uid
 @router.post("/addtocart")
 def addToCart(request: CartRequest, db: Session = Depends(get_db)):
     try:
@@ -73,6 +74,7 @@ def addToCart(request: CartRequest, db: Session = Depends(get_db)):
             detail=str(e)
         )
 
+# alter the quantity of medicines
 @router.post("/addtocart/quantity")
 def alter_quantity(request:CartQuantityRequest,db: Session = Depends(get_db)):
     try:
@@ -110,7 +112,7 @@ def alter_quantity(request:CartQuantityRequest,db: Session = Depends(get_db)):
             detail=str(e)
         )
 
-
+# delete the product from cart of requested uid
 @router.delete("/deletefromcart")
 def delete_from_cart(request: CartRequest, db: Session = Depends(get_db)):
     try:
