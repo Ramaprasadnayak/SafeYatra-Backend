@@ -2,8 +2,7 @@ from config.setting import (SECRET_KEY,ALGORITHM,ACCESS_TOKEN_EXPIRE_MINUTES,REF
 from datetime import datetime, timedelta, timezone
 from jose import jwt, JWTError
 from passlib.context import CryptContext
-from fastapi import HTTPException, status
-
+from fastapi import HTTPException
 
 # password hashing technique
 pwd_context = CryptContext(
@@ -55,7 +54,7 @@ def create_refresh_token(data: dict):
         algorithm=ALGORITHM
     )
     return encoded_jwt
-
+    
 # everytime user makes a request it verify the jwt token 
 def verify_token(token: str, expected_type: str):
     try:

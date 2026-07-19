@@ -4,12 +4,13 @@ from sqlalchemy.orm import Session
 from models.cart import Cart
 from models.medicine import Medicine
 from schemas.cart_schemas import CartRequest,CartQuantityRequest
+from routers.refresh import get_current_user
 
 router = APIRouter(prefix="/cart", tags=["cartQuery"])
 
 # return all items of requested uid
 @router.get("/userid/{usrid}")
-def cartFunction(usrid: int, db: Session = Depends(get_db)):
+def cartFunction(usrid: int,current_user=Depends(get_current_user), db: Session = Depends(get_db)):
     try:
         cart_items = (
             db.query(
@@ -51,14 +52,14 @@ def cartFunction(usrid: int, db: Session = Depends(get_db)):
 
 # add to cart for requested uid
 @router.post("/addtocart")
-def addToCart(request: CartRequest, db: Session = Depends(get_db)):
+def addToCart(request: CartRequest,current_user=Depends(get_current_user), db: Session = Depends(get_db)):
     try:
         duplicate_entry=db.query(Cart).filter(Cart.usr_id==request.usrid,Cart.med_id==request.medid).first()
         if duplicate_entry:
             duplicate_entry.quantity+=1
         else:
             item=Cart(
-                usr_id=request.usrid,
+                usr_id=request.usrid, 
                 med_id=request.medid,
                 quantity=1
             )
@@ -76,7 +77,7 @@ def addToCart(request: CartRequest, db: Session = Depends(get_db)):
 
 # alter the quantity of medicines
 @router.post("/addtocart/quantity")
-def alter_quantity(request:CartQuantityRequest,db: Session = Depends(get_db)):
+def alter_quantity(request:CartQuantityRequest,current_user=Depends(get_current_user),db: Session = Depends(get_db)):
     try:
         entry = (
             db.query(Cart).filter(Cart.usr_id == request.usrid,Cart.med_id == request.medid).first()
@@ -114,7 +115,7 @@ def alter_quantity(request:CartQuantityRequest,db: Session = Depends(get_db)):
 
 # delete the product from cart of requested uid
 @router.delete("/deletefromcart")
-def delete_from_cart(request: CartRequest, db: Session = Depends(get_db)):
+def delete_from_cart(request: CartRequest,current_user=Depends(get_current_user), db: Session = Depends(get_db)):
     try:
         available_entry = db.query(Cart).filter(Cart.usr_id == request.usrid,Cart.med_id == request.medid).first()
         if not available_entry:

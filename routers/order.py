@@ -5,13 +5,14 @@ from models.medicine import Medicine
 from models.cart import Cart
 from schemas.order import AddressRequest
 from models.order import Address
-from fastapi import Query
+from routers.refresh import get_current_user
+
 
 router = APIRouter(prefix="/order", tags=["orderQuery"])
 
 
 @router.get("/getaddress/{usrid}")
-def getAddress(usrid: int, db: Session = Depends(get_db)):
+def getAddress(usrid: int,current_user=Depends(get_current_user), db: Session = Depends(get_db)):
     try:
         addresses = db.query(Address).filter(Address.usr_id == usrid).all()
 
@@ -31,7 +32,7 @@ def getAddress(usrid: int, db: Session = Depends(get_db)):
         )
 
 @router.post("/postaddress")
-def post_address(query: AddressRequest, db: Session = Depends(get_db)):
+def post_address(query: AddressRequest,current_user=Depends(get_current_user), db: Session = Depends(get_db)):
     try:
         address = db.query(Address).filter(Address.usr_id == query.userid).first()
         if address:
@@ -57,7 +58,7 @@ def post_address(query: AddressRequest, db: Session = Depends(get_db)):
         )
 
 @router.get("/getmedicine/{medid}/{usrid}")
-def getMedicine(medid: int,usrid: int,db: Session = Depends(get_db)):
+def getMedicine(medid: int,usrid: int,current_user=Depends(get_current_user),db: Session = Depends(get_db)):
     try:
         medicine = (
             db.query(

@@ -4,12 +4,13 @@ from config.db import get_db
 from models.medicine import Medicine
 from schemas.medicine_schemas import CategoryResponse
 from utils.category_map import CATEGORY_MAP
+from routers.refresh import get_current_user
 
 
 router = APIRouter(prefix="/medicines", tags=["SearchQuery"])
 
 @router.get("/search/")
-def search(query: str, db: Session = Depends(get_db)):
+def search(query: str,current_user=Depends(get_current_user), db: Session = Depends(get_db)):
     try:
         from rapidfuzz import process
         medicine = db.query(Medicine).all()
@@ -42,8 +43,9 @@ def search(query: str, db: Session = Depends(get_db)):
         )
 
 
+# filter medicine based on category in category page
 @router.get("/category/{category}", response_model=CategoryResponse)
-def get_category(category: str, db: Session = Depends(get_db)):
+def get_category(category: str,current_user=Depends(get_current_user), db: Session = Depends(get_db)):
     csv_categories = CATEGORY_MAP.get(category)
 
     if not csv_categories:
