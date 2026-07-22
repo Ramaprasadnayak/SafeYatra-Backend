@@ -3,7 +3,7 @@ from config.db import get_db
 from sqlalchemy.orm import Session
 from models.medicine import Medicine
 from models.cart import Cart
-from schemas.order import AddressRequest
+from schemas.order import AddressRequest,DeleteAddressRequest
 from models.order import Address
 from routers.refresh import get_current_user
 
@@ -15,12 +15,16 @@ router = APIRouter(prefix="/order", tags=["orderQuery"])
 def getAddress(usrid: int,current_user=Depends(get_current_user), db: Session = Depends(get_db)):
     try:
         addresses = db.query(Address).filter(Address.usr_id == usrid).all()
-
+        if not addresses:
+            addresses=[]
         return {
             "status": 200,
             "message": "Retrieved addresses",
             "data": [
-                {"address": address.address}
+                {
+                    "addressid":address.addressid,
+                    "address": address.address
+                }
                 for address in addresses
             ]
         }
@@ -34,14 +38,11 @@ def getAddress(usrid: int,current_user=Depends(get_current_user), db: Session = 
 @router.post("/postaddress")
 def post_address(query: AddressRequest,current_user=Depends(get_current_user), db: Session = Depends(get_db)):
     try:
-        address = db.query(Address).filter(Address.usr_id == query.userid).first()
-        if address:
-            address = Address(
-                usr_id=query.userid,
-                address=query.address
-            )
-            db.add(address)
-
+        address = Address(
+            usr_id=query.userid,
+            address=query.address
+        )
+        db.add(address)
         db.commit()
         db.refresh(address)
 
@@ -104,6 +105,35 @@ def getMedicine(medid: int,usrid: int,current_user=Depends(get_current_user),db:
         }
 
     except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=str(e)
+        )
+        
+        
+@router.delete("/deleteaddress")
+def delete_address(address: DeleteAddressRequest,current_user=Depends(get_current_user),db: Session = Depends(get_db)):
+    try:
+        entry = (
+            db.query(Address)
+            .filter(
+                Address.addressid == address.addressid,
+                Address.usr_id == address.userid).first())
+        if not entry:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="Address not found"
+            )
+        db.delete(entry)
+        db.commit()
+        return {
+            "status": 200,
+            "detail": "Address deleted successfully"
+        }
+    except HTTPException:
+        raise
+    except Exception as e:
+        db.rollback()
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=str(e)
