@@ -3,5 +3,4 @@
 
 __pycache__/
 *.py[cod]
-
-medical.sql
+.venv/

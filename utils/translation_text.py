@@ -1,0 +1,12 @@
+LANGUAGES={
+    "Kannada":"kn",
+    "English":"en",
+    "Telugu":"te",
+    "Hindi":"hi",
+    "Punjabi":"pa",
+    "Gujarathi":"gu",
+    "Malayalam":"ml",
+    "Bengali":"bn",
+    "Tamil":"ta",
+    "Marathi":"mr"
+}
