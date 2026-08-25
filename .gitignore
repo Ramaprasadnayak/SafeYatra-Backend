@@ -1,6 +1,6 @@
 # env file
 .env
-
+deep.py
 __pycache__/
 *.py[cod]
 .venv/

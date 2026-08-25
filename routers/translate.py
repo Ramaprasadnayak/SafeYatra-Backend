@@ -18,7 +18,8 @@ def translation(request: TranslateRequest):
             source=my_source,
             target=my_target
         ).translate(request.text)
-
+        if not translated or "Error 500" in translated or "That's an error" in translated:
+            raise HTTPException(status_code=502, detail="Translation service unavailable")
         return {
             "message": "Translation Successful",
             "translated_text": translated
