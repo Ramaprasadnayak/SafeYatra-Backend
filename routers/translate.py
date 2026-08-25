@@ -1,20 +1,34 @@
-from fastapi import WebSocket, APIRouter
+from fastapi import APIRouter, status, HTTPException
 from utils.translation_text import LANGUAGES
 from deep_translator import GoogleTranslator
+from schemas.translate import TranslateRequest
+
 router = APIRouter(
     prefix="/translate",
     tags=["translation"]
 )
-@router.websocket("/")
-async def translation(websocket: WebSocket):
-    await websocket.accept()
-    lang = await websocket.receive_json()
-    source = LANGUAGES.get(lang["source"])
-    target = LANGUAGES.get(lang["target"])
-    while True:
-        text = await websocket.receive_text()
+
+
+@router.post("/")
+def translation(request: TranslateRequest):
+    try:
+        my_source = LANGUAGES.get(request.source)
+        my_target = LANGUAGES.get(request.target)
         translated = GoogleTranslator(
-            source=source,
-            target=target
-        ).translate(text)
-        await websocket.send_text(translated)
+            source=my_source,
+            target=my_target
+        ).translate(request.text)
+
+        return {
+            "message": "Translation Successful",
+            "translated_text": translated
+        }
+
+    except HTTPException:
+        raise
+
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=str(e)
+        )

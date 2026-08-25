@@ -1,4 +1,5 @@
 LANGUAGES={
+    "auto":"auto",
     "Kannada":"kn",
     "English":"en",
     "Telugu":"te",

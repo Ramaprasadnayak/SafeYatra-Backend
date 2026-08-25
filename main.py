@@ -6,11 +6,9 @@ app = FastAPI(
     version="1.0.0"
 )
 
-# routers
 app.include_router(translate.router)
 
 
-# Testing endpoint
 @app.get("/")
 def root():
     return {
