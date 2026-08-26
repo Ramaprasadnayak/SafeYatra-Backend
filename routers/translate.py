@@ -2,7 +2,7 @@ from fastapi import APIRouter, status, HTTPException
 from utils.translation_text import LANGUAGES
 from deep_translator import GoogleTranslator
 from schemas.translate import TranslateRequest
-
+from models.translation import translate_text
 router = APIRouter(
     prefix="/translate",
     tags=["translation"]
@@ -14,10 +14,10 @@ def translation(request: TranslateRequest):
     try:
         my_source = LANGUAGES.get(request.source)
         my_target = LANGUAGES.get(request.target)
-        translated = GoogleTranslator(
-            source=my_source,
-            target=my_target
-        ).translate(request.text)
+        translated = translate_text(
+            request.text,
+            my_target
+        )
         if not translated or "Error 500" in translated or "That's an error" in translated:
             raise HTTPException(status_code=502, detail="Translation service unavailable")
         return {
