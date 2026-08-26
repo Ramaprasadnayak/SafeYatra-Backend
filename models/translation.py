@@ -1,5 +1,5 @@
 import requests
-from utils.translation_text import LANGUAGES
+from config.settings import url
 
 def detect_language(text):
     for char in text:
@@ -32,14 +32,10 @@ def detect_language(text):
             return "en"
     return "auto"
 
-
 def translate_text(text, target_language):
     source_language = detect_language(text)
-
     if source_language == target_language:
         return text
-    
-    url = 
     params = {
         "q": text,
         "langpair": source_language + "|" + target_language
