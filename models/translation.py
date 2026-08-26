@@ -1,16 +1,65 @@
-from sarvamai import SarvamAI
+import requests
+from utils.translation_text import LANGUAGES
 
-client = SarvamAI(
-    api_subscription_key="YOUR_API_KEY",
-)
+def detect_language(text):
+    for char in text:
+        # Kannada
+        if '\u0C80' <= char <= '\u0CFF':
+            return "kn"
+        # Devanagari (Hindi, Marathi)
+        if '\u0900' <= char <= '\u097F':
+            return "hi"   # or "mr" depending on your logic
+        # Telugu
+        if '\u0C00' <= char <= '\u0C7F':
+            return "te"
+        # Punjabi / Gurmukhi
+        if '\u0A00' <= char <= '\u0A7F':
+            return "pa"
+        # Gujarati
+        if '\u0A80' <= char <= '\u0AFF':
+            return "gu"
+        # Malayalam
+        if '\u0D00' <= char <= '\u0D7F':
+            return "ml"
+        # Bengali
+        if '\u0980' <= char <= '\u09FF':
+            return "bn"
+        # Tamil
+        if '\u0B80' <= char <= '\u0BFF':
+            return "ta"
+        # English / Latin
+        if ('A' <= char <= 'Z') or ('a' <= char <= 'z'):
+            return "en"
+    return "auto"
 
-response = client.text.translate(
-    input="Hey, talk like you normally do.\n\nKal office mein 3 meetings thi.\n2 chai breaks.\n1 deadline miss hui.\nAur haan — salary ₹45,000 credit ho gayi 😌\n\nWrite it in Hindi, English, Tamil, Telugu — or mix it freely.\nSee how:\n\"₹45,000\"\nbecomes\n\"४५,००० रुपये\"\n\nChoose your tone (Formal, Modern Colloquial, Classical Colloquial, Code Mixed),\npick numerals (Native or International),\nand adjust speaker gender where it fits.\n\nSarvam understands real Indian language.\nNot clean. Not perfect. Just real.\n\nGo ahead.\nType it how you'd say it.",
-    source_language_code="en-IN",
-    target_language_code="hi-IN",
-    model="mayura:v1",
-    numerals_format="native",
-    mode="formal",
-)
 
-print(response.translated_text)
+def translate_text(text, target_language):
+    source_language = detect_language(text)
+
+    if source_language == target_language:
+        return text
+    
+    url = 
+    params = {
+        "q": text,
+        "langpair": source_language + "|" + target_language
+    }
+    try:
+        response = requests.get(
+            url,
+            params=params,
+            timeout=15
+        )
+        if response.status_code != 200:
+            return "Server Error: " + str(response.status_code)
+        data = response.json()
+        if "responseData" in data:
+            return data["responseData"]["translatedText"]
+        return "Translation failed."
+    except requests.exceptions.ConnectionError:
+        return "Internet connection error."
+    except requests.exceptions.Timeout:
+        return "Request timed out."
+    except Exception as e:
+        return "Error: " + str(e)
+
