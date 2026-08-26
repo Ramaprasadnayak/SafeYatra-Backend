@@ -137,8 +137,8 @@ Example response:
 ### 1. Clone the repository
 
 ```bash
-git clone <YOUR_BACKEND_REPOSITORY_URL>
-cd SafeYatra-backend
+git clone https://github.com/Ramaprasadnayak/SafeYatra-Backend.git
+cd SafeYatra-Backend
 ```
 
 ### 2. Create a virtual environment
