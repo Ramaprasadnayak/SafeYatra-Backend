@@ -32,8 +32,7 @@ def detect_language(text):
             return "en"
     return "auto"
 
-def translate_text(text, target_language):
-    source_language = detect_language(text)
+def translate_text(text, source_language , target_language):
     if source_language == target_language:
         return text
     params = {
