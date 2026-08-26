@@ -1,8 +1,8 @@
 from fastapi import APIRouter, status, HTTPException
 from utils.translation_text import LANGUAGES
-from deep_translator import GoogleTranslator
 from schemas.translate import TranslateRequest
 from models.translation import translate_text
+
 router = APIRouter(
     prefix="/translate",
     tags=["translation"]
