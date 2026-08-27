@@ -18,6 +18,7 @@ def translation(request: TranslateRequest):
             my_source = detect_language(request.text)
         
         translated = translate_text(request.text,my_source,my_target)
+        print(translated)
         
         if not translated or "Error 500" in translated or "That's an error" in translated:
             raise HTTPException(status_code=502, detail="Translation service unavailable")
