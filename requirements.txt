@@ -3,3 +3,4 @@ uvicorn == 0.40.0
 pydantic == 2.12.5
 requests == 2.34.2
 python-dotenv == 1.2.3
+geopy == 2.5.0

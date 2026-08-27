@@ -1,5 +1,5 @@
 from fastapi import FastAPI
-from routers import translate
+from routers import translate , geocode
 
 app = FastAPI(
     title="SafeYatra API",
@@ -7,6 +7,8 @@ app = FastAPI(
 )
 
 app.include_router(translate.router)
+app.include_router(geocode.router)
+
 
 
 @app.get("/")
