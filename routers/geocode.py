@@ -13,7 +13,7 @@ def geocode(location: CoordinatesRequest):
         geolocator = Nominatim(user_agent="safeyatra")
         location = geolocator.reverse((location.latitude, location.longitude), language="en")
         address = location.raw.get("address", {})
-        return {
+        return { 
             "message" : "retrived district",
             "district" : address.get("state_district") or address.get("county") or address.get("city_district")
         }
