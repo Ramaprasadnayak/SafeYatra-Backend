@@ -20,11 +20,11 @@ def get_user_info(decoded_token: dict = Depends(verify_firebase_token)):
             }
         return {
             "message": "retrieved info",
-            "info": [
-                user.get("username"),
-                user.get("phone"),
-                user.get("email")
-            ]
+            "info": {
+                "username": user.get("username"),
+                "phone": user.get("phone"),
+                "email": user.get("email")
+            }
         }
     except HTTPException:
         raise
