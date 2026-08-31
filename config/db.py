@@ -5,3 +5,4 @@ client = MongoClient(MONGODB_URL)
 
 db = client[DATABASE_NAME]
 users_collection = db["users"]
+ 

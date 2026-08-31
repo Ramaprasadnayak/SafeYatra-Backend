@@ -11,7 +11,7 @@ def get_user_info(decoded_token: dict = Depends(verify_firebase_token)):
     try:
         uid = decoded_token["uid"]
         user = users_collection.find_one({
-            "firebase_uid": uid
+            "firebaseid": uid
         })
         if not user:
             return {
@@ -60,7 +60,7 @@ def register(user: RegisterRequest):
 
         # create user
         users_collection.insert_one({
-            "Firebaseid":user.Firebaseid,
+            "firebaseid":user.firebaseid,
             "username": user.username,
             "email": user.email
         })
