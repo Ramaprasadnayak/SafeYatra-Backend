@@ -2,11 +2,11 @@ from fastapi import HTTPException, APIRouter
 from config.db import districts_collection
 
 router = APIRouter(
-    prefix="/translate",
-    tags=["translation"]
+    prefix="/api",
+    tags=["boundary"]
 )
 
-@router.get("/api/districts/{district_code}/coordinates")
+@router.get("/districts/{district_code}/coordinates")
 async def get_district_coordinates(district_code: str):
     district = districts_collection.find_one(
         {
@@ -27,7 +27,6 @@ async def get_district_coordinates(district_code: str):
         )
     geometry = district["geometry"]
     polygons = []
-    # GeoJSON MultiPolygon
     for polygon in geometry["coordinates"]:
         for ring in polygon:
             converted_ring = []
@@ -40,6 +39,7 @@ async def get_district_coordinates(district_code: str):
                 })
             polygons.append(converted_ring)
     return {
+        "message":"retrived boundary successfully",
         "district": district["district"],
         "state": district["state"],
         "district_code": district["district_code"],
