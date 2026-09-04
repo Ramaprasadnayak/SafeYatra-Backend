@@ -3,6 +3,7 @@ uvicorn == 0.40.0
 pydantic == 2.12.5
 pymongo == 4.17.0
 rapidfuzz == 3.14.6
+joblib == 1.6.0
 firebase_admin == 7.5.0
 requests == 2.34.2
 python-dotenv == 1.2.3
