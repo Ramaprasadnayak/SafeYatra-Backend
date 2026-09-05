@@ -1,8 +1,8 @@
 import joblib
 import pandas as pd
-from
+
 class SafeYatraRiskModel:
-    def __init__(self, model_path="safeyatra_risk_model.joblib"):
+    def __init__(self, model_path="./mlmodel/safeyatra_risk_model.joblib"):
         bundle = joblib.load(model_path)
         self.rf_model = bundle["rf_model"]
         self.weights = bundle["weights"]
