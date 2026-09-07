@@ -7,13 +7,13 @@ router = APIRouter(
 
 model = SafeYatraRiskModel()
 @router.get("/predict/{district_name}")
-def prediction(district_name: str,state_name: str | None = Query(default=None)):
+def prediction(district_name: str):
     try:
-        result = model.predict(
-            district_name=district_name,
-            state_name=state_name
-        )
-        return result
+        result = model.predict(district_name=district_name)
+        return {
+            "message":"Prediction Successful",
+            "result":result,
+        }
     except ValueError as e:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
