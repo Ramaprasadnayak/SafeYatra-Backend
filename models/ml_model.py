@@ -94,6 +94,6 @@ class SafeYatraRiskModel:
         return {
             "district_name": row["district_name"],
             "state_name": row["state_name"],
-            "risk_score": round(risk_score, 4),
+            "safety_score": round(100 - (risk_score * 100), 2),
             "risk_label": risk_label,
         }

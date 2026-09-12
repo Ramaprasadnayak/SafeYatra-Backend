@@ -1,4 +1,4 @@
-from fastapi import APIRouter, HTTPException, Query, status
+from fastapi import APIRouter, HTTPException, status
 from models.ml_model import SafeYatraRiskModel
 router = APIRouter(
     prefix="/ml",
