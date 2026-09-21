@@ -1,0 +1,15 @@
+services:
+  backend:
+    build: .
+    container_name: safeyatra-backend
+
+    ports:
+      - "8000:8000"
+
+    env_file:
+      - .env
+
+    volumes:
+      - ./serviceAccountKey.json:/app/serviceAccountKey.json:ro
+
+    restart: unless-stopped
