@@ -1,16 +1,14 @@
 import os
-from pathlib import Path
+import json
 
 import firebase_admin
 from firebase_admin import credentials
 
-BASE_DIR = Path(__file__).resolve().parent.parent
+firebase_json = os.getenv("FIREBASE_SERVICE_ACCOUNT")
 
-service_account_path = os.getenv(
-    "FIREBASE_CREDENTIALS",
-    str(BASE_DIR / "serviceAccountKey.json")
-)
+if not firebase_json:
+    raise RuntimeError("FIREBASE_SERVICE_ACCOUNT environment variable is not set")
 
-cred = credentials.Certificate(service_account_path)
+cred = credentials.Certificate(json.loads(firebase_json))
 
 firebase_admin.initialize_app(cred)
