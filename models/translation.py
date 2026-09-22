@@ -5,13 +5,13 @@ def detect_language(text):
         # Kannada
         if '\u0C80' <= char <= '\u0CFF':
             return "kn"
-        # Devanagari (Hindi, Marathi)
+        # Devanagari
         if '\u0900' <= char <= '\u097F':
-            return "hi"   # or "mr" depending on your logic
+            return "hi"
         # Telugu
         if '\u0C00' <= char <= '\u0C7F':
             return "te"
-        # Punjabi / Gurmukhi
+        # Punjabi
         if '\u0A00' <= char <= '\u0A7F':
             return "pa"
         # Gujarati
@@ -30,13 +30,12 @@ def detect_language(text):
         if ('A' <= char <= 'Z') or ('a' <= char <= 'z'):
             return "en"
     return "auto"
-
-def translate_text(text, source_language , target_language):
+def translate_text(text, source_language, target_language):
     if source_language == target_language:
         return text
     params = {
         "q": text,
-        "langpair": source_language + "|" + target_language
+        "langpair": f"{source_language}|{target_language}"
     }
     try:
         response = requests.get(
@@ -44,16 +43,22 @@ def translate_text(text, source_language , target_language):
             params=params,
             timeout=15
         )
+        print("MyMemory status:", response.status_code)
+        print("MyMemory response:", response.text)
+        if response.status_code == 429:
+            return "Translation service rate limit exceeded. Please try again later."
         if response.status_code != 200:
-            return "Server Error: " + str(response.status_code)
+            return f"Translation service error: {response.status_code}"
         data = response.json()
-        if "responseData" in data:
-            return data["responseData"]["translatedText"]
-        return "Translation failed."
+        if "responseData" not in data:
+            return "Translation failed."
+        translated = data["responseData"].get("translatedText")
+        if not translated:
+            return "Translation failed."
+        return translated
     except requests.exceptions.ConnectionError:
         return "Internet connection error."
     except requests.exceptions.Timeout:
         return "Request timed out."
     except Exception as e:
-        return "Error: " + str(e)
-
+        return f"Translation error: {str(e)}"
