@@ -10,3 +10,4 @@ pandas == 3.0.5
 scikit-learn == 1.7.2
 python-dotenv == 1.2.3
 geopy == 2.5.0
+sarvamai == 0.1.34
