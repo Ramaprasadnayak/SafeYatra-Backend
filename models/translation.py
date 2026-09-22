@@ -1,5 +1,4 @@
 import requests
-from config.settings import url
 
 def detect_language(text):
     for char in text:
@@ -41,7 +40,7 @@ def translate_text(text, source_language , target_language):
     }
     try:
         response = requests.get(
-            url,
+            "https://api.mymemory.translated.net/get",
             params=params,
             timeout=15
         )
