@@ -51,24 +51,48 @@ def verifyuser(user: Verifyuser):
         )
  
  
+@router.get("/verifyusr/{usrname}")
+def verifyusrname(usrname: str):
+    try:
+        existing_user = users_collection.find_one(
+            {"username": usrname}
+        )
+        if existing_user:
+            return {
+                "exists": True,
+                "message": "User already exists"
+            }
+
+        return {
+            "exists": False,
+            "message": "Username available"
+        }
+
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=str(e)
+        )
+
 @router.post("/register")
 def register(user: RegisterRequest):
     try:
-        existing_user = users_collection.find_one({"username": user.username})
+        existing_user = users_collection.find_one(
+            {"username": user.username}
+        )
         if existing_user:
-            return {"message": "Username already exists"}
-
-        # create user
+            return {
+                "message": "Username already exists"
+            }
         users_collection.insert_one({
-            "firebaseid":user.firebaseid,
+            "firebaseid": user.firebaseid,
             "username": user.username,
-            "email": user.email
+            "email": user.email,
+            "phone": user.phno
         })
-
-        return {"message": "User registered"}
-    except HTTPException:
-        raise
-
+        return {
+            "message": "User registered"
+        }
     except Exception as e:
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
