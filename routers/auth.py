@@ -87,8 +87,7 @@ def register(user: RegisterRequest):
         users_collection.insert_one({
             "firebaseid": user.firebaseid,
             "username": user.username,
-            "email": user.email,
-            "phone": user.phno
+            "email": user.email
         })
         return {
             "message": "User registered"
