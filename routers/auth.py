@@ -85,7 +85,7 @@ def register(user: RegisterRequest):
                 "message": "Username already exists"
             }
         users_collection.insert_one({
-            "firebaseid": user.firebaseid,
+            "firebase_uid": user.firebaseid,
             "username": user.username,
             "email": user.email
         })
