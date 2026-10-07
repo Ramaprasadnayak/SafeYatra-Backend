@@ -48,30 +48,86 @@ def add_sos_email(
     uid: str = Depends(current_uid)
 ):
     email = body.email.strip().lower()
-    result = users_collection.update_one(
-        {
-            "firebase_uid": uid
-        },
-        {
-            "$addToSet": {
-                "sos_emails": email
-            }
-        },
+    user = users_collection.find_one(
+        {"firebase_uid": uid},
+        {"sos_emails": 1}
     )
-    if result.matched_count == 0:
+
+    if not user:
         raise HTTPException(
             status_code=404,
             detail="User not found",
         )
-    if result.modified_count == 0:
+
+    sos_emails = user.get("sos_emails", [])
+    sos_emails = [
+        e.strip().lower()
+        for e in sos_emails
+        if isinstance(e, str) and e.strip()
+    ]
+    if len(sos_emails) >= 2:
+        raise HTTPException(
+            status_code=400,
+            detail="You can add a maximum of 2 SOS emails",
+        )
+
+    if email in sos_emails:
         raise HTTPException(
             status_code=400,
             detail="Email already added",
         )
+    users_collection.update_one(
+        {"firebase_uid": uid},
+        {
+            "$push": {
+                "sos_emails": email
+            }
+        }
+    )
+
     return {
         "message": "Email added",
         "email": email,
     }
+    
+    
+@router.delete("/delete-email")
+def delete_sos_email(
+    body: EmailIn,
+    uid: str = Depends(current_uid)
+):
+    email = body.email.strip().lower()
+
+    result = users_collection.update_one(
+        {
+            "firebase_uid": uid,
+            "sos_emails": email
+        },
+        {
+            "$pull": {
+                "sos_emails": email
+            }
+        }
+    )
+
+    if result.matched_count == 0:
+        raise HTTPException(
+            status_code=404,
+            detail="User or email not found",
+        )
+
+    if result.modified_count == 0:
+        raise HTTPException(
+            status_code=404,
+            detail="Email not found",
+        )
+
+    return {
+        "message": "Email deleted",
+        "email": email,
+    }
+    
+    
 @router.get("/emails")
 def get_sos_emails(
     uid: str = Depends(current_uid)
