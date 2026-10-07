@@ -1,7 +1,7 @@
 from fastapi import APIRouter, Depends, Header, HTTPException
-from firebase_admin import auth as fb_auth
+from firebase_admin import auth as fb_auth,firestore
 from config.db import users_collection
-from schemas.sos_email import EmailIn
+from schemas.sos_email import EmailIn, SosAlertIn
 
 router = APIRouter(prefix="/sos", tags=["sos"])
 
@@ -72,3 +72,54 @@ def get_sos_emails(uid: str = Depends(current_uid)):
     return {
         "emails": emails,
     }
+
+def _queue_emails(recipients: list[str], subject: str, text: str, html: str) -> None:
+    db = firestore.client()
+    batch = db.batch()
+    for to in recipients:
+        batch.set(
+            db.collection("mail").document(),
+            {"to": [to], "message": {"subject": subject, "text": text, "html": html}},
+        )
+    batch.commit()
+
+
+@router.post("/send-alert")
+def send_sos_alert(body: SosAlertIn, uid: str = Depends(current_uid)):
+    user = users_collection.find_one({"firebase_uid": uid})
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+
+    recipients = user.get("sos_emails", [])
+    if not recipients:
+        raise HTTPException(status_code=400, detail="No emergency emails saved")
+
+    name = user.get("username", "A SafeYatra user")
+    map_link = ""
+    if body.latitude is not None and body.longitude is not None:
+        map_link = f"https://www.google.com/maps?q={body.latitude},{body.longitude}"
+
+    subject = f"🚨 EMERGENCY SOS from {name}"
+    text = (
+        f"{name} has triggered an Emergency SOS and may need help.\n\n"
+        f"Location: {body.locality}\n"
+        f"Area: {body.district}\n"
+        f"Coordinates: {body.coordinates}\n"
+        + (f"Map: {map_link}\n" if map_link else "")
+        + "\nPlease contact them immediately or call 112.\n— Sent via SafeYatra"
+    )
+    html = (
+        f"<h2>🚨 Emergency SOS from {name}</h2>"
+        f"<p><b>Location:</b> {body.locality}<br>"
+        f"<b>Area:</b> {body.district}<br>"
+        f"<b>Coordinates:</b> {body.coordinates}</p>"
+        + (f'<p><a href="{map_link}">Open in Google Maps</a></p>' if map_link else "")
+        + "<p>Please contact them immediately or call 112.</p>"
+    )
+
+    try:
+        _queue_emails(recipients, subject, text, html)
+    except Exception:
+        raise HTTPException(status_code=502, detail="Failed to queue emails")
+
+    return {"message": "SOS alert queued", "sent_to": len(recipients)}
