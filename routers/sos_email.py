@@ -12,13 +12,6 @@ if not RESEND_API_KEY:
     print("WARNING: RESEND_API_KEY is not configured")
 resend.api_key = RESEND_API_KEY
 
-# This works for testing with Resend's provided sender.
-#
-# For production, verify your own domain in Resend and change
-# this to something like:
-#
-# alerts@yourdomain.com
-
 SENDER_EMAIL = "SafeYatra <onboarding@resend.dev>"
 
 def current_uid(authorization: str = Header(...)) -> str:
