@@ -1,4 +1,4 @@
-import os
+from config.settings import MAILJET_API_KEY,MAILJET_SECRET_KEY
 from fastapi import APIRouter, Depends, Header, HTTPException
 from firebase_admin import auth as fb_auth
 from config.db import users_collection
@@ -6,9 +6,6 @@ from schemas.sos_email import EmailIn, SosAlertIn
 import requests
 
 router = APIRouter(prefix="/sos", tags=["sos"])
-
-MAILJET_API_KEY = os.getenv("MAILJET_API_KEY")
-MAILJET_SECRET_KEY = os.getenv("MAILJET_SECRET_KEY")
 
 if not MAILJET_API_KEY or MAILJET_SECRET_KEY:
     print("WARNING: API_KEY is not configured")
