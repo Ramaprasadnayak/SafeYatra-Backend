@@ -10,7 +10,7 @@ router = APIRouter(prefix="/sos", tags=["sos"])
 if not MAILJET_API_KEY or MAILJET_SECRET_KEY:
     print("WARNING: API_KEY is not configured")
 
-SENDER_EMAIL = "SafeYatra <onboarding@resend.dev>"
+SENDER_EMAIL = "SafeYatra.alerts@gmail.com"
 
 def current_uid(authorization: str = Header(...)) -> str:
     try:
