@@ -1,9 +1,16 @@
+import os
+import smtplib
+from email.message import EmailMessage
 from fastapi import APIRouter, Depends, Header, HTTPException
-from firebase_admin import auth as fb_auth,firestore
+from firebase_admin import auth as fb_auth
 from config.db import users_collection
 from schemas.sos_email import EmailIn, SosAlertIn
 
+
 router = APIRouter(prefix="/sos", tags=["sos"])
+
+SENDER_EMAIL = "safeyatra.alerts@gmail.com"
+SENDER_APP_PASSWORD = os.getenv("SAFETYTRA_GMAIL_PASSWORD")
 
 def current_uid(authorization: str = Header(...)) -> str:
     try:
@@ -12,16 +19,22 @@ def current_uid(authorization: str = Header(...)) -> str:
                 status_code=401,
                 detail="Invalid authorization header",
             )
+
         token = authorization.replace("Bearer ", "", 1).strip()
+
         if not token:
             raise HTTPException(
                 status_code=401,
                 detail="Missing authentication token",
             )
+
         decoded_token = fb_auth.verify_id_token(token)
+
         return decoded_token["uid"]
+
     except HTTPException:
         raise
+
     except Exception:
         raise HTTPException(
             status_code=401,
@@ -29,8 +42,12 @@ def current_uid(authorization: str = Header(...)) -> str:
         )
 
 @router.post("/add-email")
-def add_sos_email(body: EmailIn,uid: str = Depends(current_uid)):
+def add_sos_email(
+    body: EmailIn,
+    uid: str = Depends(current_uid)
+):
     email = body.email.strip().lower()
+
     result = users_collection.update_one(
         {"firebase_uid": uid},
         {
@@ -44,18 +61,21 @@ def add_sos_email(body: EmailIn,uid: str = Depends(current_uid)):
             status_code=404,
             detail="User not found",
         )
+
     if result.modified_count == 0:
         raise HTTPException(
             status_code=400,
             detail="Email already added",
         )
+
     return {
         "message": "Email added",
         "email": email,
     }
-
 @router.get("/emails")
-def get_sos_emails(uid: str = Depends(current_uid)):
+def get_sos_emails(
+    uid: str = Depends(current_uid)
+):
     user = users_collection.find_one(
         {"firebase_uid": uid},
         {
@@ -72,54 +92,113 @@ def get_sos_emails(uid: str = Depends(current_uid)):
     return {
         "emails": emails,
     }
-
-def _queue_emails(recipients: list[str], subject: str, text: str, html: str) -> None:
-    db = firestore.client()
-    batch = db.batch()
-    for to in recipients:
-        batch.set(
-            db.collection("mail").document(),
-            {"to": [to], "message": {"subject": subject, "text": text, "html": html}},
+def send_email(
+    receiver: str,
+    username: str,
+    alert: SosAlertIn
+):
+    if not SENDER_APP_PASSWORD:
+        raise Exception(
+            "SAFETYTRA_GMAIL_APP_PASSWORD environment variable is not configured"
         )
-    batch.commit()
+    message = EmailMessage()
+    message["From"] = SENDER_EMAIL
+    message["To"] = receiver
+    message["Subject"] = "🚨 SafeYatra SOS Emergency Alert"
+    body = f"""
+🚨 SAFETYTRA SOS ALERT 🚨
 
+An emergency SOS alert has been triggered from the SafeYatra application.
+
+User:
+{username}
+
+Location:
+{alert.locality}
+
+District:
+{alert.district}
+
+Coordinates:
+{alert.coordinates}
+
+Latitude:
+{alert.latitude}
+
+Longitude:
+{alert.longitude}
+
+
+Please contact the user immediately if necessary.
+
+This is an automated emergency alert from SafeYatra.
+"""
+
+    message.set_content(body)
+    with smtplib.SMTP_SSL(
+        "smtp.gmail.com",
+        465
+    ) as smtp:
+        smtp.login(SENDER_EMAIL,SENDER_APP_PASSWORD)
+        smtp.send_message(message)
 
 @router.post("/send-alert")
-def send_sos_alert(body: SosAlertIn, uid: str = Depends(current_uid)):
-    user = users_collection.find_one({"firebase_uid": uid})
-    if not user:
-        raise HTTPException(status_code=404, detail="User not found")
-
-    recipients = user.get("sos_emails", [])
-    if not recipients:
-        raise HTTPException(status_code=400, detail="No emergency emails saved")
-
-    name = user.get("username", "A SafeYatra user")
-    map_link = ""
-    if body.latitude is not None and body.longitude is not None:
-        map_link = f"https://www.google.com/maps?q={body.latitude},{body.longitude}"
-
-    subject = f"🚨 EMERGENCY SOS from {name}"
-    text = (
-        f"{name} has triggered an Emergency SOS and may need help.\n\n"
-        f"Location: {body.locality}\n"
-        f"Area: {body.district}\n"
-        f"Coordinates: {body.coordinates}\n"
-        + (f"Map: {map_link}\n" if map_link else "")
-        + "\nPlease contact them immediately or call 112.\n— Sent via SafeYatra"
+def send_sos_alert(body: SosAlertIn,uid: str = Depends(current_uid)):
+    user = users_collection.find_one(
+        {
+            "firebase_uid": uid
+        },
+        {
+            "_id": 0,
+            "username": 1,
+            "sos_emails": 1,
+        },
     )
-    html = (
-        f"<h2>🚨 Emergency SOS from {name}</h2>"
-        f"<p><b>Location:</b> {body.locality}<br>"
-        f"<b>Area:</b> {body.district}<br>"
-        f"<b>Coordinates:</b> {body.coordinates}</p>"
-        + (f'<p><a href="{map_link}">Open in Google Maps</a></p>' if map_link else "")
-        + "<p>Please contact them immediately or call 112.</p>"
+    if user is None:
+        raise HTTPException(
+            status_code=404,
+            detail="User not found",
+        )
+    username = user.get(
+        "username",
+        "SafeYatra User"
     )
+    sos_emails = user.get(
+        "sos_emails",
+        []
+    )
+    if not sos_emails:
+        raise HTTPException(
+            status_code=400,
+            detail="No SOS email addresses configured",
+        )
 
-    try:
-        _queue_emails(recipients, subject, text, html)
-    except Exception:
-        raise HTTPException(status_code=502, detail="Failed to queue emails")
-
-    return {"message": "SOS alert queued", "sent_to": len(recipients)}
+    sent_to = 0
+    failed_emails = []
+    for receiver in sos_emails:
+        receiver = receiver.strip().lower()
+        if not receiver:
+            continue
+        try:
+            send_email(
+                receiver=receiver,
+                username=username,
+                alert=body
+            )
+            sent_to += 1
+        except Exception as e:
+            print(
+                f"Failed to send SOS email to {receiver}: {e}"
+            )
+            failed_emails.append(receiver)
+    if sent_to == 0:
+        raise HTTPException(
+            status_code=500,
+            detail="Failed to send SOS email",
+        )
+    return {
+        "success": True,
+        "message": "SOS alert sent successfully",
+        "sent_to": sent_to,
+        "failed": failed_emails,
+    }

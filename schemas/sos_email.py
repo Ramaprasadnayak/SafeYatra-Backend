@@ -1,12 +1,13 @@
-from pydantic import BaseModel, EmailStr
-from typing import Optional
+from pydantic import BaseModel
+
 
 class EmailIn(BaseModel):
-    email: EmailStr
+    email: str
+
 
 class SosAlertIn(BaseModel):
-    latitude: Optional[float] = None
-    longitude: Optional[float] = None
-    locality: str = ""
-    district: str = ""
-    coordinates: str = ""
+    latitude: float | None = None
+    longitude: float | None = None
+    locality: str
+    district: str
+    coordinates: str
