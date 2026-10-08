@@ -1,39 +1,18 @@
 import html
 import requests
-from fastapi import APIRouter, Depends, Header, HTTPException
-from firebase_admin import auth as fb_auth
+from fastapi import APIRouter, Depends, HTTPException
 from config.db import users_collection
 from config.settings import MAILJET_API_KEY, MAILJET_SECRET_KEY
 from schemas.sos_email import EmailIn, SosAlertIn
+from utils.auth import current_uid, uid_filter
 
 router = APIRouter(prefix="/sos", tags=["sos"])
 
-SENDER_EMAIL = "SafeYatra.alerts@gmail.com"  # must be verified in Mailjet
+SENDER_EMAIL = "SafeYatra.alerts@gmail.com"  
 SENDER_NAME = "SafeYatra"
 MAILJET_URL = "https://api.mailjet.com/v3.1/send"
 MAX_SOS_EMAILS = 2
 
-
-def current_uid(authorization: str = Header(...)) -> str:
-    if not authorization.startswith("Bearer "):
-        raise HTTPException(401, "Invalid authorization header")
-    token = authorization[len("Bearer "):].strip()
-    if not token:
-        raise HTTPException(401, "Missing authentication token")
-    try:
-        decoded = fb_auth.verify_id_token(token)
-    except Exception as e:
-        print("Firebase auth error:", e)
-        raise HTTPException(401, "Invalid or expired token")
-    uid = decoded.get("uid") or decoded.get("user_id") or decoded.get("sub")
-    if not uid:
-        raise HTTPException(401, "Invalid Firebase token")
-    return uid
-
-
-def uid_filter(uid: str) -> dict:
-    # Works whichever key your user document uses.
-    return {"$or": [{"firebase_uid": uid}, {"uid": uid}]}
 
 
 def clean_emails(raw) -> list[str]:

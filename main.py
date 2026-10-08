@@ -1,5 +1,5 @@
 from fastapi import FastAPI
-from routers import translate, geocode, auth, district_boundary,ml,sos_email
+from routers import translate, geocode, auth, district_boundary,ml,sos_email,profile_pic_upload
 import config.firebase
 
 app = FastAPI(
@@ -13,6 +13,7 @@ app.include_router(auth.router)
 app.include_router(district_boundary.router)
 app.include_router(ml.router)
 app.include_router(sos_email.router)
+app.include_router(profile_pic_upload.router)
 
 @app.get("/")
 def root():
