@@ -16,6 +16,6 @@ def geocode(location: CoordinatesRequest):
     row = districts.iloc[hits[0]]
     return {
         "message": "Retrieved district",
-        "district": row["DISTRICT"],  # column name depends on your file
+        "district": row["DISTRICT"], 
         "state": row.get("STATE"),
     }
