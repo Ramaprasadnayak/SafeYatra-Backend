@@ -12,3 +12,4 @@ python-dotenv == 1.2.3
 geopy == 2.5.0
 sarvamai == 0.1.34
 email-validator == 2.3.0
+geopandas == 1.2.0
