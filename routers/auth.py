@@ -22,7 +22,6 @@ def get_user_info(decoded_token: dict = Depends(verify_firebase_token)):
             "message": "retrieved info",
             "info": {
                 "username": user.get("username"),
-                "phone": user.get("phone"),
                 "email": user.get("email")
             }
         }
@@ -33,6 +32,7 @@ def get_user_info(decoded_token: dict = Depends(verify_firebase_token)):
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=str(e)
         )
+        
 @router.post("/verifyuser")
 def verifyuser(user: Verifyuser):
     try:
