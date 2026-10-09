@@ -3,7 +3,7 @@ from fastapi import APIRouter, HTTPException, status
 from shapely.geometry import Point
 from schemas.cordinates import CoordinatesRequest
 
-router = APIRouter(prefix="/getmydistrict", tags=["shapely"])
+router = APIRouter(prefix="/getdistrict", tags=["geocode"])
 
 districts = gpd.read_file("data/india_districts.geojson").to_crs(4326)
 _ = districts.sindex

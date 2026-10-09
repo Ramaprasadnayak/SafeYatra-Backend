@@ -1,5 +1,5 @@
 from fastapi import FastAPI
-from routers import translate, geocode, auth, district_boundary,ml,sos_email,profile_pic_upload,geotest
+from routers import translate, auth, district_boundary,ml,sos_email,profile_pic_upload,geotest
 import config.firebase
 
 app = FastAPI(
@@ -8,7 +8,6 @@ app = FastAPI(
 )
 
 app.include_router(translate.router)
-app.include_router(geocode.router)
 app.include_router(auth.router)
 app.include_router(district_boundary.router)
 app.include_router(ml.router)
