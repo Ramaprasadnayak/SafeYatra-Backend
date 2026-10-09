@@ -8,7 +8,7 @@ router = APIRouter(
 )
 
 geolocator = Nominatim(
-    user_agent="SafeYatra/1.0 (tourist-safety-app)",
+    user_agent="SafeYatra/1.0",
     timeout=10
 )
 
@@ -45,5 +45,5 @@ def geocode(location: CoordinatesRequest):
     except Exception as e:
         raise HTTPException(
             status_code=status.HTTP_502_BAD_GATEWAY,
-            detail=f"Geocoding service unavailable: {str(e)}"
+            detail=f"Api limit reached"
         )
