@@ -11,7 +11,7 @@ def get_user_info(decoded_token: dict = Depends(verify_firebase_token)):
     try:
         uid = decoded_token["uid"]
         user = users_collection.find_one({
-            "firebaseid": uid
+            "firebase_uid": uid
         })
         if not user:
             return {
