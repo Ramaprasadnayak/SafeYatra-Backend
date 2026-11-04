@@ -8,7 +8,7 @@ from utils.auth import current_uid, uid_filter
 
 router = APIRouter(prefix="/sos", tags=["sos"])
 
-SENDER_EMAIL = "SafeYatra.alerts@gmail.com"  
+SENDER_EMAIL = "safeYatra.support@gmail.com"  
 SENDER_NAME = "SafeYatra"
 MAILJET_URL = "https://api.mailjet.com/v3.1/send"
 MAX_SOS_EMAILS = 2
