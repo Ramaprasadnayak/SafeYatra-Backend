@@ -1,9 +1,7 @@
 from fastapi import APIRouter, HTTPException, status
 from models.ml_model import SafeYatraRiskModel
-router = APIRouter(
-    prefix="/ml",
-    tags=["machine_learning"]
-)
+
+router = APIRouter(prefix="/ml",tags=["machine_learning"])
 
 model = SafeYatraRiskModel()
 @router.get("/predict/{district_name}")
